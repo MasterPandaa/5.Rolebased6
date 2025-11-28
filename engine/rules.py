@@ -1,23 +1,29 @@
 from __future__ import annotations
-from typing import List, Tuple, Optional
+
+from typing import List, Optional, Tuple
 
 from .board import Board, Coord, Move
 
 PIECE_DIRS = {
-    'N': [(-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1)],
-    'B': [(-1, -1), (-1, 1), (1, -1), (1, 1)],
-    'R': [(-1, 0), (1, 0), (0, -1), (0, 1)],
-    'Q': [(-1, -1), (-1, 1), (1, -1), (1, 1), (-1, 0), (1, 0), (0, -1), (0, 1)],
-    'K': [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)],
+    "N": [(-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1)],
+    "B": [(-1, -1), (-1, 1), (1, -1), (1, 1)],
+    "R": [(-1, 0), (1, 0), (0, -1), (0, 1)],
+    "Q": [(-1, -1), (-1, 1), (1, -1), (1, 1), (-1, 0), (1, 0), (0, -1), (0, 1)],
+    "K": [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)],
 }
 
 MATERIAL = {
-    'p': 1, 'n': 3, 'b': 3, 'r': 5, 'q': 9, 'k': 0,
+    "p": 1,
+    "n": 3,
+    "b": 3,
+    "r": 5,
+    "q": 9,
+    "k": 0,
 }
 
 
 def enemy(color: str) -> str:
-    return 'b' if color == 'w' else 'w'
+    return "b" if color == "w" else "w"
 
 
 def is_square_attacked(board: Board, sq: Coord, by_color: str) -> bool:
@@ -46,27 +52,27 @@ def generate_legal_moves(board: Board, color: str) -> List[Move]:
 
 def generate_pseudo_legal(board: Board, color: str) -> List[Move]:
     moves: List[Move] = []
-    forward = -1 if color == 'w' else 1
-    start_rank = 6 if color == 'w' else 1
-    promo_rank = 0 if color == 'w' else 7
+    forward = -1 if color == "w" else 1
+    start_rank = 6 if color == "w" else 1
+    promo_rank = 0 if color == "w" else 7
 
     for piece, (r, c) in board.all_pieces():
         if board.color_of(piece) != color:
             continue
         up = piece.upper()
-        if up == 'P':
+        if up == "P":
             # Single push
             nr = r + forward
-            if board.in_bounds(nr, c) and board.grid[nr][c] == '.':
+            if board.in_bounds(nr, c) and board.grid[nr][c] == ".":
                 if nr == promo_rank:
-                    for pr in ['Q', 'R', 'B', 'N']:
+                    for pr in ["Q", "R", "B", "N"]:
                         moves.append(((r, c), (nr, c), pr))
                 else:
                     moves.append(((r, c), (nr, c), None))
                 # Double push
                 if r == start_rank:
                     nnr = r + 2 * forward
-                    if board.grid[nnr][c] == '.':
+                    if board.grid[nnr][c] == ".":
                         moves.append(((r, c), (nnr, c), None))
             # Captures
             for dc in (-1, 1):
@@ -74,20 +80,20 @@ def generate_pseudo_legal(board: Board, color: str) -> List[Move]:
                 nc = c + dc
                 if board.in_bounds(nr, nc):
                     tp = board.grid[nr][nc]
-                    if tp != '.' and board.color_of(tp) == enemy(color):
+                    if tp != "." and board.color_of(tp) == enemy(color):
                         if nr == promo_rank:
-                            for pr in ['Q', 'R', 'B', 'N']:
+                            for pr in ["Q", "R", "B", "N"]:
                                 moves.append(((r, c), (nr, nc), pr))
                         else:
                             moves.append(((r, c), (nr, nc), None))
             # Note: en passant not implemented
-        elif up in ('N', 'K'):
+        elif up in ("N", "K"):
             for dr, dc in PIECE_DIRS[up]:
                 nr, nc = r + dr, c + dc
                 if not board.in_bounds(nr, nc):
                     continue
                 tp = board.grid[nr][nc]
-                if tp == '.' or board.color_of(tp) == enemy(color):
+                if tp == "." or board.color_of(tp) == enemy(color):
                     moves.append(((r, c), (nr, nc), None))
         else:
             # Sliding pieces: B, R, Q
@@ -95,7 +101,7 @@ def generate_pseudo_legal(board: Board, color: str) -> List[Move]:
                 nr, nc = r + dr, c + dc
                 while board.in_bounds(nr, nc):
                     tp = board.grid[nr][nc]
-                    if tp == '.':
+                    if tp == ".":
                         moves.append(((r, c), (nr, nc), None))
                     else:
                         if board.color_of(tp) == enemy(color):

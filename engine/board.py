@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
@@ -14,13 +15,13 @@ START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w"
 
 def fen_to_board(fen: str) -> Tuple[List[List[str]], str]:
     position, side = fen.split()
-    rows = position.split('/')
+    rows = position.split("/")
     board: List[List[str]] = []
     for r in rows:
         row: List[str] = []
         for ch in r:
             if ch.isdigit():
-                row.extend(['.'] * int(ch))
+                row.extend(["."] * int(ch))
             else:
                 row.append(ch)
         board.append(row)
@@ -34,7 +35,7 @@ def clone_grid(grid: List[List[str]]) -> List[List[str]]:
 @dataclass
 class Board:
     grid: List[List[str]]
-    side_to_move: str = 'w'  # 'w' or 'b'
+    side_to_move: str = "w"  # 'w' or 'b'
     halfmove_clock: int = 0
     fullmove_number: int = 1
 
@@ -44,10 +45,12 @@ class Board:
         return cls(grid=grid, side_to_move=side)
 
     def copy(self) -> "Board":
-        return Board(grid=clone_grid(self.grid),
-                     side_to_move=self.side_to_move,
-                     halfmove_clock=self.halfmove_clock,
-                     fullmove_number=self.fullmove_number)
+        return Board(
+            grid=clone_grid(self.grid),
+            side_to_move=self.side_to_move,
+            halfmove_clock=self.halfmove_clock,
+            fullmove_number=self.fullmove_number,
+        )
 
     def piece_at(self, coord: Coord) -> str:
         r, c = coord
@@ -65,7 +68,7 @@ class Board:
         (r1, c1), (r2, c2), promo = move
         nb = self.copy()
         piece = nb.piece_at((r1, c1))
-        nb.set_piece((r1, c1), '.')
+        nb.set_piece((r1, c1), ".")
         if promo:
             # Promotion piece should be uppercase for white and lowercase for black
             if piece.isupper():
@@ -74,8 +77,8 @@ class Board:
                 nb.set_piece((r2, c2), promo.lower())
         else:
             nb.set_piece((r2, c2), piece)
-        nb.side_to_move = 'b' if self.side_to_move == 'w' else 'w'
-        if nb.side_to_move == 'w':
+        nb.side_to_move = "b" if self.side_to_move == "w" else "w"
+        if nb.side_to_move == "w":
             nb.fullmove_number += 1
         return nb
 
@@ -84,17 +87,17 @@ class Board:
         for r in range(8):
             for c in range(8):
                 p = self.grid[r][c]
-                if p != '.':
+                if p != ".":
                     out.append((p, (r, c)))
         return out
 
     def color_of(self, piece: str) -> Optional[str]:
-        if piece == '.':
+        if piece == ".":
             return None
-        return 'w' if piece.isupper() else 'b'
+        return "w" if piece.isupper() else "b"
 
     def find_king(self, color: str) -> Optional[Coord]:
-        target = 'K' if color == 'w' else 'k'
+        target = "K" if color == "w" else "k"
         for r in range(8):
             for c in range(8):
                 if self.grid[r][c] == target:
