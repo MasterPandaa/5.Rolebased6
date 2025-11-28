@@ -1,10 +1,11 @@
 import sys
-import pygame
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
 
+import pygame
+
+from engine.ai import SimpleAI
 from engine.board import Board, Move
 from engine.rules import generate_legal_moves
-from engine.ai import SimpleAI
 
 # UI constants
 TILE_SIZE = 80
@@ -17,13 +18,23 @@ TEXT_COLOR = (20, 20, 20)
 
 # Unicode symbols mapping
 PIECE_UNI = {
-    'K': '\u2654', 'Q': '\u2655', 'R': '\u2656', 'B': '\u2657', 'N': '\u2658', 'P': '\u2659',
-    'k': '\u265A', 'q': '\u265B', 'r': '\u265C', 'b': '\u265D', 'n': '\u265E', 'p': '\u265F',
+    "K": "\u2654",
+    "Q": "\u2655",
+    "R": "\u2656",
+    "B": "\u2657",
+    "N": "\u2658",
+    "P": "\u2659",
+    "k": "\u265a",
+    "q": "\u265b",
+    "r": "\u265c",
+    "b": "\u265d",
+    "n": "\u265e",
+    "p": "\u265f",
 }
 
 FONT_CANDIDATES = [
     "Segoe UI Symbol",  # Windows
-    "DejaVu Sans",      # Linux
+    "DejaVu Sans",  # Linux
     "Arial Unicode MS",
     "Noto Sans Symbols",
 ]
@@ -38,7 +49,13 @@ def pick_font(size: int) -> pygame.font.Font:
     return pygame.font.SysFont(None, size)
 
 
-def draw_board(screen: pygame.Surface, board: Board, selected: Optional[Tuple[int, int]], legal_from_selected: List[Move], font: pygame.font.Font):
+def draw_board(
+    screen: pygame.Surface,
+    board: Board,
+    selected: Optional[Tuple[int, int]],
+    legal_from_selected: List[Move],
+    font: pygame.font.Font,
+):
     for r in range(8):
         for c in range(8):
             rect = pygame.Rect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE)
@@ -60,7 +77,7 @@ def draw_board(screen: pygame.Surface, board: Board, selected: Optional[Tuple[in
     for r in range(8):
         for c in range(8):
             p = board.grid[r][c]
-            if p == '.':
+            if p == ".":
                 continue
             ch = PIECE_UNI[p]
             text = font.render(ch, True, TEXT_COLOR)
@@ -88,8 +105,8 @@ def main():
     font = pick_font(int(TILE_SIZE * 0.8))
 
     board = Board.starting()
-    human_color = 'w'
-    ai = SimpleAI('b')
+    human_color = "w"
+    ai = SimpleAI("b")
 
     selected: Optional[Tuple[int, int]] = None
     legal_moves_cache: List[Move] = []
@@ -108,11 +125,15 @@ def main():
                     p = board.grid[r][c]
                     if selected is None:
                         # select if it's your piece
-                        if p != '.' and (p.isupper() if human_color == 'w' else p.islower()):
+                        if p != "." and (
+                            p.isupper() if human_color == "w" else p.islower()
+                        ):
                             selected = sq
                             # cache legal moves from this square
                             all_legal = generate_legal_moves(board, human_color)
-                            legal_moves_cache = [mv for mv in all_legal if mv[0] == selected]
+                            legal_moves_cache = [
+                                mv for mv in all_legal if mv[0] == selected
+                            ]
                         else:
                             selected = None
                             legal_moves_cache = []
@@ -125,10 +146,14 @@ def main():
                                 break
                         if mv is None:
                             # reselect
-                            if p != '.' and (p.isupper() if human_color == 'w' else p.islower()):
+                            if p != "." and (
+                                p.isupper() if human_color == "w" else p.islower()
+                            ):
                                 selected = sq
                                 all_legal = generate_legal_moves(board, human_color)
-                                legal_moves_cache = [m for m in all_legal if m[0] == selected]
+                                legal_moves_cache = [
+                                    m for m in all_legal if m[0] == selected
+                                ]
                             else:
                                 selected = None
                                 legal_moves_cache = []
@@ -136,8 +161,8 @@ def main():
                             # handle promotion UI minimally: auto promote to Queen
                             (fr, fc), (tr, tc), promo = mv
                             piece = board.grid[fr][fc]
-                            if (piece == 'P' and tr == 0) or (piece == 'p' and tr == 7):
-                                mv = ((fr, fc), (tr, tc), 'Q')
+                            if (piece == "P" and tr == 0) or (piece == "p" and tr == 7):
+                                mv = ((fr, fc), (tr, tc), "Q")
                             board = board.apply_move(mv)
                             selected = None
                             legal_moves_cache = []
@@ -149,8 +174,8 @@ def main():
                 # ensure promotion auto to queen for AI
                 (fr, fc), (tr, tc), promo = mv
                 piece = board.grid[fr][fc]
-                if (piece == 'P' and tr == 0) or (piece == 'p' and tr == 7):
-                    mv = ((fr, fc), (tr, tc), 'Q')
+                if (piece == "P" and tr == 0) or (piece == "p" and tr == 7):
+                    mv = ((fr, fc), (tr, tc), "Q")
                 board = board.apply_move(mv)
             # simple delay for UX
             pygame.time.delay(150)
